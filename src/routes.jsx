@@ -12,6 +12,9 @@ import LiteSuccessPage from "./Components/Form/LiteSuccessPage";
 import RtiLandingPage from "./Components/Rti_Components/RTILanding"
 import AuditCoursePage from "./Components/AuditCourse_Components/AuditCourseLanding" 
 import PlannerPage from "./Components/Planner_Components/PlannerLanding"
+import RTISuccessPage from "./Pages/SuccessPage/RTISuccessPage";
+import PlannerSuccessPage from "./Pages/SuccessPage/PlannerSuccessPage"
+import AuditSuccessPage from "./Pages/SuccessPage/AuditSuccessPage"
 
 
 const AppRoutes = () => {
@@ -29,8 +32,11 @@ const AppRoutes = () => {
       <Route path="/proform/success" element={<ProSuccessPage />} />
       <Route path="/liteform/success" element={<LiteSuccessPage />} />
       <Route path="/rti" element={<RtiLandingPage />} />
+       <Route path="/rti/success" element={<RTISuccessPage />} />
       <Route path="/audit_course" element={<AuditCoursePage />} /> 
+      <Route path="/audit_course/success" element={<AuditSuccessPage/>} /> 
       <Route path="/planner" element={<PlannerPage />} />
+       <Route path="/planner/success" element={<PlannerSuccessPage />} />
     </Routes>
   );
 };

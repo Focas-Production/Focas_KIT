@@ -4,6 +4,7 @@ import AppRoutes from "./routes";
 import "./index.css";
 import { CartProvider } from "./context/CartContext";
 import { initFacebookPixel } from "./lib/facebookPixel";
+import { PaymentProvider } from "./context/PaymentContext";
 
 initFacebookPixel(); // initialize once globally
 
@@ -31,11 +32,13 @@ const PageViewTracker = ({ children }) => {
 const App = () => {
   return (
     <Router>
+      <PaymentProvider>
       <CartProvider>
         <PageViewTracker>
           <AppRoutes />
         </PageViewTracker>
       </CartProvider>
+      </PaymentProvider>
     </Router>
   );
 };

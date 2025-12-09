@@ -6,12 +6,17 @@ import RTI_Video from "../../../public/files/videos/rti.mp4"
 import RTI_Pic from "../../../public/files/images/rti.png"
 import { loadRazorpayScript } from "../../utils/razorpay.js";
 import axios from "axios";
+import { useContext } from 'react';
+import { PaymentContext } from '../../context/PaymentContext.jsx';
+import { useNavigate } from "react-router-dom";
 
 export default function RTILanding() {
+const navigate = useNavigate();
+  const { setPaymentData } = useContext(PaymentContext);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [showWhatsapp, setShowWhatsapp] = useState(false);
-  const apiUrl = import.meta.env.VITE_API_URL;
+  const apiUrl = import.meta.env.VITE_API_URL || "https://api.focasedu.com";
  const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -124,11 +129,14 @@ const handleSubmit = async (e) => {
             paymentOption: "",
           });
               // ---- REDIRECT ----
-      const redirectUrl = `https://focasedu.com/success?whatsapp_number=${encodeURIComponent(
-        "91 " + formData.phoneNumber
-      )}&level=${encodeURIComponent(formData.caLevel)}`;
+      setPaymentData({
+      phoneNumber: formData.phoneNumber,
+      paymentOption: formData.paymentOption,
+      caLevel: formData.caLevel,
+      name: formData.name
+    });
 
-      window.location.href = redirectUrl;
+    navigate('/rti/success');
            
         } catch (error) {
           console.error(error);
@@ -640,9 +648,9 @@ That’s why we created CA-Led Personal Video Reviews — a step-by-step explana
             className="w-full border-2 border-gray-300 rounded-md px-4 py-2.5"
           >
             <option value="">Select Payment Type</option>
-            <option value="PER_PAPER">Per Paper - ₹199</option>
-            <option value="PER_GROUP">Per Group - ₹499</option>
-            <option value="BOTH_GROUPS">Both Groups - ₹799</option>
+            <option value="PER_PAPER">Per Paper - ₹350</option>
+            <option value="PER_GROUP">Per Group - ₹800</option>
+            <option value="BOTH_GROUPS">Both Groups - ₹1500</option>
           </select>
         </div>
 

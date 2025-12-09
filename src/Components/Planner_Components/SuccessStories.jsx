@@ -11,17 +11,17 @@ const stories = [
   {
     name: "Gayathri",
     certificate: "images/certificate.png",
-    video: `${planner1}`,
+    video: `${planner6}`,
   },
   {
     name: "Harini Aiswariya",
     certificate: "images/certificate.png",
-    video: `${planner2}`,
+    video: `${planner5}`,
   },
   {
     name: "Jeshurun",
     certificate: "images/certificate.png",
-    video:`${planner3}`,
+    video:`${planner2}`,
   },
   {
     name: "Marimuthu",
@@ -31,12 +31,12 @@ const stories = [
   {
     name: "Sai shruthi",
     certificate: "images/certificate.png",
-    video:`${planner5}`,
+    video:`${planner3}`,
   },
   {
     name: "Sridevi",
     certificate: "images/certificate.png",
-    video: `${planner6}`,
+    video: `${planner1}`,
   },
 ];
 

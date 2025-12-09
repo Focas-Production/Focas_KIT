@@ -7,8 +7,13 @@ import Planner_Video from "../../../public/files/videos/Planer Foley Landscape.m
 import Planner_Pic from "../../../public/files/images/planner.jpeg"
 import { loadRazorpayScript } from "../../utils/razorpay.js";
 import axios from "axios";
+import { useContext } from 'react';
+import { PaymentContext } from '../../context/PaymentContext.jsx';
+import { useNavigate } from "react-router-dom";
 
 export default function PlannerLanding() {
+  const navigate = useNavigate();
+  const { setPaymentData } = useContext(PaymentContext);
   const apiUrl = import.meta.env.VITE_API_URL;
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -155,11 +160,14 @@ export default function PlannerLanding() {
               caLevel: "",
             });
 
-            // Redirect to success page with params (using submitted data)
-            const redirectUrl = `https://focasedu.com/success?whatsapp_number=${encodeURIComponent(
-              "91 " + userData.phoneNumber
-            )}&level=${encodeURIComponent(userData.caLevel)}`;
-            window.location.href = redirectUrl;
+                      // ---- REDIRECT ----
+      setPaymentData({
+      phoneNumber: formData.phoneNumber,
+      caLevel: formData.caLevel,
+      name: formData.name
+    });
+
+    navigate('/planner/success');
           } catch (err) {
             console.error("Verification handler error:", err);
             alert("Error verifying payment");
@@ -683,4 +691,25 @@ Whether you're starting fresh or restarting after a low attempt, the FOCAS Plann
 
     
   );
+  <style>
+{`
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes scaleIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.25s ease-out;
+  }
+
+  .animate-scaleIn {
+    animation: scaleIn 0.25s ease-out;
+  }
+`}
+</style>
 }

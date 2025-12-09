@@ -7,12 +7,17 @@ import AuditVideo from "../../../public/files/videos/Audit.mp4"
 import AuditImage from "../../../public/files/images/Audit.jpg"
 import { loadRazorpayScript } from "../../utils/razorpay.js";
 import axios from "axios";
+import { useContext } from 'react';
+import { PaymentContext } from '../../context/PaymentContext.jsx';
+import { useNavigate } from "react-router-dom";
 
 export default function AuditCourseLanding() {
+  const navigate = useNavigate();
+    const { setPaymentData } = useContext(PaymentContext);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [showWhatsapp, setShowWhatsapp] = useState(false);
-  const apiUrl = import.meta.env.VITE_API_URL;
+  const apiUrl = import.meta.env.VITE_API_URL || "https://api.focasedu.com"
  const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -20,7 +25,6 @@ export default function AuditCourseLanding() {
     sro: "",
     caLevel: "",
     previousAttempt: "",
-    rtiLink: "",
     locationOfResidence: "",
     courseName: "",
   });
@@ -55,7 +59,6 @@ const handleSubmit = async (e) => {
     "sro",
     "caLevel",
     "previousAttempt",
-    "rtiLink",
     "locationOfResidence",
     "courseName",
   ];
@@ -120,17 +123,17 @@ const handleSubmit = async (e) => {
             sro: "",
             caLevel: "",
             previousAttempt: "",
-            rtiLink: "",
             locationOfResidence: "",
             courseName: "",
           });
                // ---- REDIRECT ----
-      const redirectUrl = `https://focasedu.com/success?whatsapp_number=${encodeURIComponent(
-        "91 " + formData.phoneNumber
-      )}&level=${encodeURIComponent(formData.caLevel)}`;
+   setPaymentData({
+      phoneNumber: formData.phoneNumber,
+      caLevel: formData.caLevel,
+      name: formData.name
+    });
 
-      window.location.href = redirectUrl; 
-           
+    navigate('/audit_course/success');
         } catch (error) {
           console.error(error);
           alert("Error verifying payment");
@@ -220,7 +223,7 @@ const handleSubmit = async (e) => {
             
             {/*  <span>Get Your Certified Copies <br /> 
              <span className="font-large text-blue-500">Personally Reviewed</span> by a CA </span> <br /> */}
-             FOCAS <span  className="font-large text-blue-500">Audit</span> for Jan 2026 – Study the Entire Book With Expert CA Guidance
+             CA Inter <span  className="font-large text-blue-500">Audit</span> for Jan 2026 – Study the Entire Book With Expert CA Guidance
              
             </h1>
 
@@ -350,7 +353,7 @@ const handleSubmit = async (e) => {
             {/* Overview */}
             <div className="mb-6 md:mb-8">
               <h3 className="text-xl md:text-2xl font-bold mb-2 md:mb-4">
-               FOCAS Audit for Jan 2026 
+               CA Inter Audit for Jan 2026 
               </h3>
               <h5 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">
                 Make this Your Last Attempt
@@ -395,7 +398,7 @@ This crash course solves all of that through an Expert CA Faculty explaining the
             {/* Why Choose FOCAS */}
             <div className="mb-6 md:mb-8">
               <h3 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">
-              What’s Included in FOCAS Audit
+              What’s Included in CA Inter Audit
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 {benefits.map((benefit, idx) => (
@@ -431,7 +434,7 @@ This crash course solves all of that through an Expert CA Faculty explaining the
                 onClick={() => setIsPopupOpen(true)}
                 className="w-full bg-white text-blue-600 font-bold py-2 md:py-3 px-4 md:px-6 rounded-lg hover:bg-gray-100 transition text-sm md:text-base"
               >
-                Enroll for FOCAS Audit Now
+                Enroll for CA Inter Audit Now
               </button>
             </div>
           </div>
@@ -456,7 +459,7 @@ This crash course solves all of that through an Expert CA Faculty explaining the
                 onClick={() => setIsPopupOpen(true)}
                 className="w-full bg-blue-700 text-white font-bold py-2 px-4 rounded-lg mb-6 hover:bg-blue-800 transition"
               >
-          Enroll for FOCAS Audit Now
+          Enroll for CA Inter Audit Now
               </button>
 
               <h4 className="font-bold mb-3">Why This Crash Course Works</h4>
@@ -622,19 +625,6 @@ This crash course solves all of that through an Expert CA Faculty explaining the
           </div>
         </div>
 
-        {/* RTI Link */}
-        <div>
-          <label className="block text-sm font-bold mb-2.5">Certified Copy (RTI) Link</label>
-          <input
-            type="text"
-            name="rtiLink"
-            placeholder="Paste Google Drive link"
-            value={formData.rtiLink}
-            onChange={handleInputChange}
-            className="w-full border-2 border-gray-300 rounded-md px-4 py-2.5"
-          />
-        </div>
-
         {/* Location */}
         <div>
           <label className="block text-sm font-bold mb-2.5">Location of Residence</label>
@@ -658,7 +648,7 @@ This crash course solves all of that through an Expert CA Faculty explaining the
             className="w-full border-2 border-gray-300 rounded-md px-4 py-2.5"
           >
             <option value="">Select Course</option>
-            <option value="AUDIT_CRASH_COURSE">AUDIT_CRASH_COURSE- RS3500</option>
+            <option value="AUDIT_CRASH_COURSE">AUDIT_CRASH_COURSE- RS4000</option>
           </select>
         </div>
 
