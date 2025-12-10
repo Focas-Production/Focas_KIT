@@ -9,6 +9,9 @@ import axios from "axios";
 import { useContext } from 'react';
 import { PaymentContext } from '../../context/PaymentContext.jsx';
 import { useNavigate } from "react-router-dom";
+import { loadMetaPixel } from "../../utils/metaPixel.js";
+import toast from "react-hot-toast";
+import { useCallback } from "react";
 
 export default function RTILanding() {
 const navigate = useNavigate();
@@ -32,6 +35,10 @@ const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+  // === Meta Pixel ===
+  loadMetaPixel();
+  window.fbq("track", "PageView");
+
     const handleScroll = () => {
       setShowWhatsapp(window.scrollY > 200);
     };
@@ -48,120 +55,147 @@ const navigate = useNavigate();
   };
 
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+const handleSubmit = useCallback(
+  async (e) => {
+    e.preventDefault();
 
-  // 1️⃣ VALIDATION — Check required fields
-  const requiredFields = [
-    "name",
-    "email",
-    "phoneNumber",
-    "sro",
-    "caLevel",
-    "previousAttempt",
-    "rtiLink",
-    "locationOfResidence",
-    "paymentOption",
-  ];
+    // BLOCK double clicks
+    if (isSubmitting) return;
 
-  const emptyFields = requiredFields.filter(
-    (field) => !formData[field] || formData[field].trim() === ""
-  );
-
-  if (emptyFields.length > 0) {
-    alert("Please fill all required fields");
-    return;
-  }
-
-  // 2️⃣ LOAD RAZORPAY SCRIPT
-  const res = await loadRazorpayScript();
-  if (!res) return alert("Razorpay SDK failed to load");
-
-  try {
-    setIsSubmitting(true);
-
-    // 3️⃣ CREATE ORDER
-    const createOrderRes = await axios.post(
-  `${apiUrl}/api/payment/rti/create-order`,
-      formData
-    );
-
-    if (!createOrderRes.data.success) {
-      setIsSubmitting(false);
-      return alert("Failed to create order");
+    // ---- VALIDATION ----
+    const validationError = validate();
+    if (validationError) {
+      toast.dismiss("validation");
+      toast.error(validationError, { id: "validation" });
+      return;
     }
 
-    const { order, keyId, userData } = createOrderRes.data;
+    // ---- LOAD RAZORPAY SDK ----
+    const sdkLoaded = await loadRazorpayScript();
+    if (!sdkLoaded) {
+      toast.dismiss("sdk-error");
+      toast.error("Failed to load Razorpay SDK", { id: "sdk-error" });
+      return;
+    }
 
-    // 4️⃣ OPEN RAZORPAY PAYMENT WINDOW
-    const options = {
-      key: keyId,
-      amount: order.amount,
-      currency: "INR",
-      name: "CA Guru.AI",
-      description: "RTI Payment",
-      order_id: order.id,
+    setIsSubmitting(true);
 
-      handler: async (response) => {
-        try {
-          // 5️⃣ VERIFY PAYMENT
-          await axios.post(
-            `${apiUrl}/api/payment/rti/verify-payment`,
-            {
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-              formData: userData,
+    // Show "Creating order…" toast once
+    toast.dismiss("create-order");
+    toast.loading("Creating order...", { id: "create-order" });
+
+    try {
+      // ---- CREATE ORDER ----
+      const res = await axios.post(
+        `${apiUrl}/api/payment/planner/create-order`,
+        formData
+      );
+
+      if (!res?.data?.success) {
+        toast.dismiss("create-order");
+        toast.error("Failed to create order", { id: "create-order-fail" });
+        setIsSubmitting(false);
+        return;
+      }
+
+      toast.dismiss("create-order");
+      toast.success("Order created!", { id: "create-order-success" });
+
+      const { order, keyId, userData } = res.data;
+
+      // ---- RAZORPAY OPTIONS ----
+      const options = {
+        key: keyId,
+        amount: order.amount,
+        currency: order.currency || "INR",
+        name: "FOCAS / CA Guru",
+        description: "FOCAS Planner Kit",
+        order_id: order.id,
+
+        handler: async (response) => {
+          // Show "Verifying…" toast
+          toast.dismiss("verify");
+          toast.loading("Verifying payment...", { id: "verify" });
+
+          try {
+            const verifyRes = await axios.post(
+              `${apiUrl}/api/payment/planner/verify-payment`,
+              {
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                formData: userData,
+              }
+            );
+
+            if (!verifyRes?.data?.success) {
+              toast.dismiss("verify");
+              toast.error("Payment verification failed", {
+                id: "verify-fail",
+              });
+              return;
             }
-          );
 
-          alert("Payment Successful!");
-          // 6️⃣ CLEAR FORM
-          setFormData({
-            name: "",
-            email: "",
-            phoneNumber: "",
-            sro: "",
-            caLevel: "",
-            previousAttempt: "",
-            rtiLink: "",
-            locationOfResidence: "",
-            paymentOption: "",
-          });
-              // ---- REDIRECT ----
-      setPaymentData({
-      phoneNumber: formData.phoneNumber,
-      paymentOption: formData.paymentOption,
-      caLevel: formData.caLevel,
-      name: formData.name
-    });
+            toast.dismiss("verify");
+            toast.success("Payment Successful!", { id: "payment-success" });
 
-    navigate('/rti/success');
-           
-        } catch (error) {
-          console.error(error);
-          alert("Error verifying payment");
-        }
-      },
+            // Reset form
+            setFormData({
+              name: "",
+              title: "",
+              attempt: "",
+              email: "",
+              phoneNumber: "",
+              address: {
+                fullAddress: "",
+                city: "",
+                state: "",
+                pincode: "",
+                landmark: "",
+              },
+              caLevel: "",
+            });
 
-      prefill: {
-        name: formData.name,
-        email: formData.email,
-        contact: formData.phoneNumber,
-      },
+            // Pass data to success page
+            setPaymentData({
+              phoneNumber: formData.phoneNumber,
+              caLevel: formData.caLevel,
+              name: formData.name,
+            });
 
-      theme: { color: "#4f46e5" },
-    };
+            navigate("/planner/success");
+          } catch (err) {
+            toast.dismiss("verify");
+            toast.error("Error verifying payment", { id: "verify-error" });
+            console.error(err);
+          } finally {
+            setIsSubmitting(false);
+          }
+        },
 
-    const rzp = new window.Razorpay(options);
-    rzp.open();
-  } catch (err) {
-    console.error(err);
-    alert("Something went wrong!");
-  }
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.phoneNumber,
+        },
 
-  setIsSubmitting(false);
-};
+        theme: { color: "#4f46e5" },
+      };
+
+      // ---- OPEN PAYMENT ----
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error(err);
+      toast.dismiss("create-order");
+      toast.error("Something went wrong", { id: "create-order-exception" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  },
+  [formData, apiUrl, isSubmitting, navigate, setPaymentData]
+);
+
 
 
 

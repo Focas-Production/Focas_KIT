@@ -10,6 +10,9 @@ import axios from "axios";
 import { useContext } from 'react';
 import { PaymentContext } from '../../context/PaymentContext.jsx';
 import { useNavigate } from "react-router-dom";
+import { loadMetaPixel } from "../../utils/metaPixel.js";
+import toast from "react-hot-toast";
+import { useCallback } from "react";
 
 export default function AuditCourseLanding() {
   const navigate = useNavigate();
@@ -32,6 +35,10 @@ export default function AuditCourseLanding() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+      // === Meta Pixel ===
+      loadMetaPixel();
+      window.fbq("track", "PageView");
+      
     const handleScroll = () => {
       setShowWhatsapp(window.scrollY > 200);
     };
@@ -47,118 +54,152 @@ export default function AuditCourseLanding() {
     }));
   };
 
+const handleSubmit = useCallback(
+  async (e) => {
+    e.preventDefault();
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+    // Block double clicks
+    if (isSubmitting) return;
 
-  // 1️⃣ VALIDATION — Check required fields
-  const requiredFields = [
-    "name",
-    "email",
-    "phoneNumber",
-    "sro",
-    "caLevel",
-    "previousAttempt",
-    "locationOfResidence",
-    "courseName",
-  ];
+    // 1️⃣ VALIDATION
+    const requiredFields = [
+      "name",
+      "email",
+      "phoneNumber",
+      "sro",
+      "caLevel",
+      "previousAttempt",
+      "locationOfResidence",
+      "courseName",
+    ];
 
-  const emptyFields = requiredFields.filter(
-    (field) => !formData[field] || formData[field].trim() === ""
-  );
-
-  if (emptyFields.length > 0) {
-    alert("Please fill all required fields");
-    return;
-  }
-
-  // 2️⃣ LOAD RAZORPAY SCRIPT
-  const res = await loadRazorpayScript();
-  if (!res) return alert("Razorpay SDK failed to load");
-
-  try {
-    setIsSubmitting(true);
-
-    // 3️⃣ CREATE ORDER
-    const createOrderRes = await axios.post(
-  `${apiUrl}/api/payment/audit-crash-course/create-order`,
-      formData
+    const emptyFields = requiredFields.filter(
+      (field) => !formData[field] || formData[field].trim() === ""
     );
 
-    if (!createOrderRes.data.success) {
-      setIsSubmitting(false);
-      return alert("Failed to create order");
+    if (emptyFields.length > 0) {
+      toast.dismiss("validation-error");
+      toast.error("Please fill all required fields", {
+        id: "validation-error",
+      });
+      return;
     }
 
-    const { order, keyId, userData } = createOrderRes.data;
+    // 2️⃣ LOAD RAZORPAY SDK
+    const sdkLoaded = await loadRazorpayScript();
+    if (!sdkLoaded) {
+      toast.dismiss("sdk-error");
+      toast.error("Razorpay SDK failed to load", { id: "sdk-error" });
+      return;
+    }
 
-    // 4️⃣ OPEN RAZORPAY PAYMENT WINDOW
-    const options = {
-      key: keyId,
-      amount: order.amount,
-      currency: "INR",
-      name: "CA Guru.AI",
-      description: "RTI Payment",
-      order_id: order.id,
+    setIsSubmitting(true);
 
-      handler: async (response) => {
-        try {
-          // 5️⃣ VERIFY PAYMENT
-          await axios.post(
-            `${apiUrl}/api/payment/audit-crash-course/verify-payment`,
-            {
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-              formData: userData,
-            }
-          );
+    // Loading toast
+    toast.dismiss("creating-order");
+    toast.loading("Creating order...", { id: "creating-order" });
 
-          alert("Payment Successful!");
-          // 6️⃣ CLEAR FORM
-          setFormData({
-            name: "",
-            email: "",
-            phoneNumber: "",
-            sro: "",
-            caLevel: "",
-            previousAttempt: "",
-            locationOfResidence: "",
-            courseName: "",
-          });
-               // ---- REDIRECT ----
-   setPaymentData({
-      phoneNumber: formData.phoneNumber,
-      caLevel: formData.caLevel,
-      name: formData.name
-    });
+    try {
+      // 3️⃣ CREATE ORDER
+      const res = await axios.post(
+        `${apiUrl}/api/payment/audit-crash-course/create-order`,
+        formData
+      );
 
-    navigate('/audit_course/success');
-        } catch (error) {
-          console.error(error);
-          alert("Error verifying payment");
-        }
-      },
+      if (!res?.data?.success) {
+        toast.dismiss("creating-order");
+        toast.error("Failed to create order", { id: "create-order-fail" });
+        setIsSubmitting(false);
+        return;
+      }
 
-      prefill: {
-        name: formData.name,
-        email: formData.email,
-        contact: formData.phoneNumber,
-      },
+      toast.dismiss("creating-order");
+      toast.success("Order created!", { id: "order-created" });
 
-      theme: { color: "#4f46e5" },
-    };
+      const { order, keyId, userData } = res.data;
 
-    const rzp = new window.Razorpay(options);
-    rzp.open();
-  } catch (err) {
-    console.error(err);
-    alert("Something went wrong!");
-  }
+      // 4️⃣ Razorpay Options
+      const options = {
+        key: keyId,
+        amount: order.amount,
+        currency: "INR",
+        name: "CA Guru.AI",
+        description: "Audit Crash Course Payment",
+        order_id: order.id,
 
-  setIsSubmitting(false);
-};
+        handler: async (response) => {
+          toast.dismiss("verifying");
+          toast.loading("Verifying payment...", { id: "verifying" });
 
+          try {
+            // 5️⃣ VERIFY PAYMENT
+            await axios.post(
+              `${apiUrl}/api/payment/audit-crash-course/verify-payment`,
+              {
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                formData: userData,
+              }
+            );
+
+            toast.dismiss("verifying"); 
+            toast.success("Payment Successful!", {
+              id: "payment-success",
+            });
+
+            // 6️⃣ CLEAR FORM
+            setFormData({
+              name: "",
+              email: "",
+              phoneNumber: "",
+              sro: "",
+              caLevel: "",
+              previousAttempt: "",
+              locationOfResidence: "",
+              courseName: "",
+            });
+
+            // Pass data to success page
+            setPaymentData({
+              phoneNumber: formData.phoneNumber,
+              caLevel: formData.caLevel,
+              name: formData.name,
+            });
+
+            navigate("/audit_course/success");
+          } catch (err) {
+            toast.dismiss("verifying");
+            toast.error("Error verifying payment", {
+              id: "verify-error",
+            });
+            console.error(err);
+          } finally {
+            setIsSubmitting(false);
+          }
+        },
+
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.phoneNumber,
+        },
+
+        theme: { color: "#4f46e5" },
+      };
+
+      // 7️⃣ OPEN PAYMENT WINDOW
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      toast.dismiss("creating-order");
+      toast.error("Something went wrong!", { id: "unknown-error" });
+      console.error(err);
+      setIsSubmitting(false);
+    }
+  },
+  [formData, apiUrl, isSubmitting, navigate, setPaymentData]
+);
 
 
   const benefits = [

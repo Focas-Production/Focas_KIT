@@ -3,12 +3,25 @@ import { Copy, MessageCircle, Instagram, Send } from 'lucide-react';
 import focasLogo from "../../../public/files/logos/focas.png"
 import { PaymentContext } from '../../context/PaymentContext';
 import { useContext } from 'react';
+import { useEffect } from 'react';
+import { loadMetaPixel } from '../../utils/metaPixel';
 
 export default function PlannerSuccessPage() {
   const [popup, setPopup] = useState('');
   
  const { paymentData } = useContext(PaymentContext);
 
+ useEffect(() => {
+  // Load Meta Pixel script
+  loadMetaPixel();
+
+  // FIRE PURCHASE EVENT
+  window.fbq("track", "Purchase", {
+    value: paymentData?.amount || 0,   // Put your amount field
+    currency: "INR",
+    phone: paymentData?.phoneNumber,
+  });
+}, []);
 
 
   // Hardcoded content - customize here

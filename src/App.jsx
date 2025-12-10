@@ -5,6 +5,7 @@ import "./index.css";
 import { CartProvider } from "./context/CartContext";
 import { initFacebookPixel } from "./lib/facebookPixel";
 import { PaymentProvider } from "./context/PaymentContext";
+import { Toaster } from 'react-hot-toast';
 
 initFacebookPixel(); // initialize once globally
 
@@ -32,6 +33,7 @@ const PageViewTracker = ({ children }) => {
 const App = () => {
   return (
     <Router>
+      <Toaster position="top-center" />
       <PaymentProvider>
       <CartProvider>
         <PageViewTracker>

@@ -10,6 +10,10 @@ import axios from "axios";
 import { useContext } from 'react';
 import { PaymentContext } from '../../context/PaymentContext.jsx';
 import { useNavigate } from "react-router-dom";
+import { loadMetaPixel } from "../../utils/metaPixel.js";
+import toast from "react-hot-toast";
+import { useCallback } from "react";
+
 
 export default function PlannerLanding() {
   const navigate = useNavigate();
@@ -38,6 +42,9 @@ export default function PlannerLanding() {
   
 
   useEffect(() => {
+  // === Meta Pixel ===
+      loadMetaPixel();
+      window.fbq("track", "PageView");
     const handleScroll = () => {
       setShowWhatsapp(window.scrollY > 200);
     };
@@ -93,32 +100,55 @@ export default function PlannerLanding() {
     return null;
   };
 
- const handleSubmit = async (e) => {
+const handleSubmit = useCallback(
+  async (e) => {
     e.preventDefault();
 
+    // BLOCK double clicks
+    if (isSubmitting) return;
+
+    // ---- VALIDATION ----
     const validationError = validate();
     if (validationError) {
-      return alert(validationError);
+      toast.dismiss("validation");
+      toast.error(validationError, { id: "validation" });
+      return;
     }
 
-    // load razorpay
+    // ---- LOAD RAZORPAY SDK ----
     const sdkLoaded = await loadRazorpayScript();
-    if (!sdkLoaded) return alert("Failed to load Razorpay SDK");
+    if (!sdkLoaded) {
+      toast.dismiss("sdk-error");
+      toast.error("Failed to load Razorpay SDK", { id: "sdk-error" });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    // Show "Creating order…" toast once
+    toast.dismiss("create-order");
+    toast.loading("Creating order...", { id: "create-order" });
 
     try {
-      setIsSubmitting(true);
+      // ---- CREATE ORDER ----
+      const res = await axios.post(
+        `${apiUrl}/api/payment/planner/create-order`,
+        formData
+      );
 
-      // Create order on backend. backend will determine amount from title.
-      const createOrderRes = await axios.post(`${apiUrl}/api/payment/planner/create-order`, formData);
-
-      if (!createOrderRes?.data?.success) {
+      if (!res?.data?.success) {
+        toast.dismiss("create-order");
+        toast.error("Failed to create order", { id: "create-order-fail" });
         setIsSubmitting(false);
-        console.error("Create order error:", createOrderRes?.data);
-        return alert("Failed to create order");
+        return;
       }
 
-      const { order, keyId, userData } = createOrderRes.data;
+      toast.dismiss("create-order");
+      toast.success("Order created!", { id: "create-order-success" });
 
+      const { order, keyId, userData } = res.data;
+
+      // ---- RAZORPAY OPTIONS ----
       const options = {
         key: keyId,
         amount: order.amount,
@@ -126,24 +156,35 @@ export default function PlannerLanding() {
         name: "FOCAS / CA Guru",
         description: "FOCAS Planner Kit",
         order_id: order.id,
+
         handler: async (response) => {
+          // Show "Verifying…" toast
+          toast.dismiss("verify");
+          toast.loading("Verifying payment...", { id: "verify" });
+
           try {
-            // Verify payment (planner verify endpoint)
-            const verifyRes = await axios.post(`${apiUrl}/api/payment/planner/verify-payment`, {
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-              formData: userData,
-            });
+            const verifyRes = await axios.post(
+              `${apiUrl}/api/payment/planner/verify-payment`,
+              {
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                formData: userData,
+              }
+            );
 
             if (!verifyRes?.data?.success) {
-              console.error("Verify failed:", verifyRes?.data);
-              alert("Payment verification failed");
+              toast.dismiss("verify");
+              toast.error("Payment verification failed", {
+                id: "verify-fail",
+              });
               return;
             }
 
-            alert("Payment successful!");
-            // clear form (reset nested address object too)
+            toast.dismiss("verify");
+            toast.success("Payment Successful!", { id: "payment-success" });
+
+            // Reset form
             setFormData({
               name: "",
               title: "",
@@ -160,36 +201,45 @@ export default function PlannerLanding() {
               caLevel: "",
             });
 
-                      // ---- REDIRECT ----
-      setPaymentData({
-      phoneNumber: formData.phoneNumber,
-      caLevel: formData.caLevel,
-      name: formData.name
-    });
+            // Pass data to success page
+            setPaymentData({
+              phoneNumber: formData.phoneNumber,
+              caLevel: formData.caLevel,
+              name: formData.name,
+            });
 
-    navigate('/planner/success');
+            navigate("/planner/success");
           } catch (err) {
-            console.error("Verification handler error:", err);
-            alert("Error verifying payment");
+            toast.dismiss("verify");
+            toast.error("Error verifying payment", { id: "verify-error" });
+            console.error(err);
+          } finally {
+            setIsSubmitting(false);
           }
         },
+
         prefill: {
           name: formData.name,
           email: formData.email,
           contact: formData.phoneNumber,
         },
+
         theme: { color: "#4f46e5" },
       };
 
+      // ---- OPEN PAYMENT ----
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err) {
       console.error(err);
-      alert("Something went wrong while creating order");
+      toast.dismiss("create-order");
+      toast.error("Something went wrong", { id: "create-order-exception" });
     } finally {
       setIsSubmitting(false);
     }
-  };
+  },
+  [formData, apiUrl, isSubmitting, navigate, setPaymentData]
+);
 
 
   const benefits = [
