@@ -74,7 +74,7 @@ export default function PlannerLanding() {
 
 
  const validate = () => {
-    const requiredTop = ["name", "title", "attempt", "email", "phoneNumber", "caLevel"];
+    const requiredTop = ["name", "email", "phoneNumber", "caLevel", "address", "attempt","title"];
     for (const f of requiredTop) {
       const v = formData[f];
       if (!v || (typeof v === "string" && v.trim() === "")) {

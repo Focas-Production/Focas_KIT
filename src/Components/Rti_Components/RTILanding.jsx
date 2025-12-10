@@ -54,6 +54,81 @@ const navigate = useNavigate();
     }));
   };
 
+const validate = () => {
+  const {
+    name,
+    email,
+    phoneNumber,
+    sro,
+    caLevel,
+    previousAttempt,
+    rtiLink,
+    locationOfResidence,
+    paymentOption,
+  } = formData;
+
+  // Name
+  if (!name?.trim()) return "Name is required";
+
+  // Email
+  if (!email?.trim()) return "Email is required";
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email))
+    return "Enter a valid email address";
+
+  // Phone
+  if (!phoneNumber?.trim()) return "WhatsApp number is required";
+  if (phoneNumber.length !== 10)
+    return "WhatsApp number must be 10 digits";
+
+  // SRO
+  if (!sro?.trim()) return "SRO number is required";
+
+  // CA Level
+  const validCaLevels = [
+    "CA Foundation",
+    "CA Intermediate",
+    "CA Final",
+  ];
+
+  if (!caLevel) return "Please select your CA Level";
+  if (!validCaLevels.includes(caLevel))
+    return "Invalid CA Level selected";
+
+  // Previous Attempt
+  if (!previousAttempt?.trim())
+    return "Previous attempt is required";
+
+  // RTI Link
+  if (!rtiLink?.trim()) return "RTI Link is required";
+
+  const urlPattern =
+    /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)([\/\w .-]*)*\/?$/;
+  if (!urlPattern.test(rtiLink))
+    return "Enter a valid RTI Google Drive link";
+
+  // Location
+  if (!locationOfResidence?.trim())
+    return "Location of residence is required";
+
+  // Payment Option
+  const validPaymentOptions = [
+    "PER_PAPER",
+    "PER_GROUP",
+    "BOTH_GROUPS",
+  ];
+
+  if (!paymentOption)
+    return "Please select a payment option";
+
+  if (!validPaymentOptions.includes(paymentOption))
+    return "Invalid payment option selected";
+
+  return ""; // ✔ No errors
+};
+
+
 
 const handleSubmit = useCallback(
   async (e) => {
@@ -87,7 +162,7 @@ const handleSubmit = useCallback(
     try {
       // ---- CREATE ORDER ----
       const res = await axios.post(
-        `${apiUrl}/api/payment/planner/create-order`,
+        `${apiUrl}/api/payment/rti/create-order`,
         formData
       );
 
@@ -119,7 +194,7 @@ const handleSubmit = useCallback(
 
           try {
             const verifyRes = await axios.post(
-              `${apiUrl}/api/payment/planner/verify-payment`,
+              `${apiUrl}/api/payment/rti/verify-payment`,
               {
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_order_id: response.razorpay_order_id,
@@ -142,28 +217,24 @@ const handleSubmit = useCallback(
             // Reset form
             setFormData({
               name: "",
-              title: "",
-              attempt: "",
               email: "",
               phoneNumber: "",
-              address: {
-                fullAddress: "",
-                city: "",
-                state: "",
-                pincode: "",
-                landmark: "",
-              },
+              sro:"",
               caLevel: "",
+              previousAttempt:"",
+              rtiLink:"",
+              locationOfResidence:"",
+              paymentOption:"",
             });
 
             // Pass data to success page
             setPaymentData({
               phoneNumber: formData.phoneNumber,
-              caLevel: formData.caLevel,
+              paymentOption: formData.paymentOption,
               name: formData.name,
             });
 
-            navigate("/planner/success");
+            navigate("/rti/success");
           } catch (err) {
             toast.dismiss("verify");
             toast.error("Error verifying payment", { id: "verify-error" });
@@ -195,10 +266,6 @@ const handleSubmit = useCallback(
   },
   [formData, apiUrl, isSubmitting, navigate, setPaymentData]
 );
-
-
-
-
 
 
   const benefits = [
