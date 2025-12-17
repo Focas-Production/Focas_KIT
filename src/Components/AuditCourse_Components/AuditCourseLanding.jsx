@@ -54,6 +54,56 @@ export default function AuditCourseLanding() {
     }));
   };
 
+  const validate = () => {
+  // 1️⃣ Required top-level fields
+  const requiredFields = [
+    "name",
+    "email",
+    "phoneNumber",
+    "sro",
+    "caLevel",
+    "previousAttempt",
+    "locationOfResidence",
+    "courseName",
+  ];
+
+  for (const field of requiredFields) {
+    const value = formData[field];
+    if (!value || (typeof value === "string" && value.trim() === "")) {
+      return `${field} is required`;
+    }
+  }
+
+  // 2️⃣ Email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(formData.email)) {
+    return "Enter a valid email address";
+  }
+
+  // 3️⃣ Phone validation (India – 10 digits)
+  if (!/^\d{10}$/.test(formData.phoneNumber)) {
+    return "Phone number must be 10 digits";
+  }
+
+  // 4️⃣ CA Level validation (optional but recommended)
+  const validCaLevels = [
+    "CA Foundation",
+    "CA Intermediate",
+    "CA Final",
+  ];
+  if (!validCaLevels.includes(formData.caLevel)) {
+    return "Invalid CA Level selected";
+  }
+
+  // 5️⃣ Previous attempt validation
+  if (!formData.previousAttempt.trim()) {
+    return "Previous attempt is required";
+  }
+
+  return null; // ✅ No validation errors
+};
+
+
 const handleSubmit = useCallback(
   async (e) => {
     e.preventDefault();
@@ -62,28 +112,16 @@ const handleSubmit = useCallback(
     if (isSubmitting) return;
 
     // 1️⃣ VALIDATION
-    const requiredFields = [
-      "name",
-      "email",
-      "phoneNumber",
-      "sro",
-      "caLevel",
-      "previousAttempt",
-      "locationOfResidence",
-      "courseName",
-    ];
 
-    const emptyFields = requiredFields.filter(
-      (field) => !formData[field] || formData[field].trim() === ""
-    );
+    // 1️⃣ VALIDATION
+const validationError = validate();
+if (validationError) {
+  toast.dismiss("validation");
+  toast.error(validationError, { id: "validation" });
+  return;
+}
 
-    if (emptyFields.length > 0) {
-      toast.dismiss("validation-error");
-      toast.error("Please fill all required fields", {
-        id: "validation-error",
-      });
-      return;
-    }
+   
 
     // 2️⃣ LOAD RAZORPAY SDK
     const sdkLoaded = await loadRazorpayScript();
@@ -141,32 +179,20 @@ const handleSubmit = useCallback(
                 razorpay_signature: response.razorpay_signature,
                 formData: userData,
               }
-            );
-
-            toast.dismiss("verifying"); 
-            toast.success("Payment Successful!", {
-              id: "payment-success",
-            });
-
-            // 6️⃣ CLEAR FORM
-            setFormData({
-              name: "",
-              email: "",
-              phoneNumber: "",
-              sro: "",
-              caLevel: "",
-              previousAttempt: "",
-              locationOfResidence: "",
-              courseName: "",
-            });
-
-            // Pass data to success page
+            ); 
+            // ✅ FIX HERE
+           toast.dismiss("verifying");
+            
             setPaymentData({
               phoneNumber: formData.phoneNumber,
-              caLevel: formData.caLevel,
-              name: formData.name,
-            });
-
+              name:formData.name,
+              amount:"4000",
+              caLevel:formData.caLevel,
+              razorpayOrderId:response.razorpay_order_id
+            }); 
+            toast.success("Payment Successful!", {
+              id: "payment-success",
+            });   
             navigate("/audit_course/success");
           } catch (err) {
             toast.dismiss("verifying");

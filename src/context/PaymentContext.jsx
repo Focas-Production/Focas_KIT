@@ -7,7 +7,9 @@ export function PaymentProvider({ children }) {
     phoneNumber: '',
     paymentOption: '',
     caLevel: '',
-    name: ''
+    amount:'',
+    name: '',
+    razorpayOrderId:'',
   });
 
   return (

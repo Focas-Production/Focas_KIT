@@ -5,11 +5,53 @@ import { PaymentContext } from '../../context/PaymentContext';
 import { useContext } from 'react';
 import { useEffect } from 'react';
 import { loadMetaPixel } from '../../utils/metaPixel';
+import { auditCourseTemplate } from '../../services/auditCourseTemplate.js';
+import { createContact } from '../../services/createContact.js';
+import { useRef } from "react";
 
 export default function AuditSuccessPage() {
   const [popup, setPopup] = useState('');
-  
+
+  const [loading, setLoading] = useState(true);
+
  const { paymentData } = useContext(PaymentContext);
+
+ const hasRunRef = useRef(false);
+
+ const handleWhatsAppFlow = async () => {
+    if (hasRunRef.current) return; // ⛔ stop second run
+    hasRunRef.current = true;
+
+    setLoading(true); // 🔄 start spinner
+  
+    try {
+      const contactPayload = {
+        mobile: `+91${paymentData.phoneNumber}`,
+        name: paymentData.name,
+      };
+  
+      const contactRes = await createContact(contactPayload);
+      console.log("Contact created:", contactRes);
+  
+      if (!contactRes?.success) return;
+  
+      const payload = {
+    to: `+91${paymentData.phoneNumber}`,
+    name: paymentData.name,
+    orderId: paymentData.razorpayOrderId,
+    amount: paymentData.amount,
+    phoneNumber: "6383514285"
+  };
+
+  const res = await auditCourseTemplate(payload);
+  console.log(res);
+  
+    } catch (error) {
+      console.error("WhatsApp flow error:", error);
+    } finally{
+      setLoading(false); // ✅ stop spinner (success or error)
+    }
+  };
 
   useEffect(() => {
    // Load Meta Pixel script
@@ -17,10 +59,11 @@ export default function AuditSuccessPage() {
  
    // FIRE PURCHASE EVENT
    window.fbq("track", "Purchase", {
-     value: paymentData?.amount || 0,   // Put your amount field
+     value: paymentData?.amount || 4000,   // Put your amount field
      currency: "INR",
      phone: paymentData?.phoneNumber,
    });
+   handleWhatsAppFlow()
  }, []);
 
   // Hardcoded content - customize here
@@ -43,6 +86,17 @@ export default function AuditSuccessPage() {
       setTimeout(() => setPopup(''), 2000);
     });
   };
+
+   if (loading) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
+        <div className="w-16 h-16 border-4 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+        <p className="mt-4 text-gray-700 font-medium text-lg">
+          Sending WhatsApp confirmation wait…
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 md:p-8">

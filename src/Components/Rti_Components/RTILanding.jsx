@@ -215,7 +215,7 @@ const handleSubmit = useCallback(
             toast.success("Payment Successful!", { id: "payment-success" });
 
             // Reset form
-            setFormData({
+           /*  setFormData({
               name: "",
               email: "",
               phoneNumber: "",
@@ -225,16 +225,16 @@ const handleSubmit = useCallback(
               rtiLink:"",
               locationOfResidence:"",
               paymentOption:"",
-            });
-
+            }); */
             // Pass data to success page
             setPaymentData({
               phoneNumber: formData.phoneNumber,
               paymentOption: formData.paymentOption,
               name: formData.name,
+              razorpayOrderId:response.razorpay_order_id,
             });
-
-            navigate("/rti/success");
+            console.log(setPaymentData)
+           navigate("/rti/success");
           } catch (err) {
             toast.dismiss("verify");
             toast.error("Error verifying payment", { id: "verify-error" });

@@ -185,7 +185,7 @@ const handleSubmit = useCallback(
             toast.success("Payment Successful!", { id: "payment-success" });
 
             // Reset form
-            setFormData({
+            /* setFormData({
               name: "",
               title: "",
               attempt: "",
@@ -199,13 +199,14 @@ const handleSubmit = useCallback(
                 landmark: "",
               },
               caLevel: "",
-            });
-
+            }); */
             // Pass data to success page
             setPaymentData({
               phoneNumber: formData.phoneNumber,
-              caLevel: formData.caLevel,
               name: formData.name,
+              amount:formData.amount || "399",
+              caLevel:formData.caLevel,
+              razorpayOrderId:response.razorpay_order_id
             });
 
             navigate("/planner/success");

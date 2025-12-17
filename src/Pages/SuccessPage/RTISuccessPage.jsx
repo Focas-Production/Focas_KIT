@@ -5,11 +5,53 @@ import { PaymentContext } from '../../context/PaymentContext';
 import { useContext } from 'react';
 import { useEffect } from 'react';
 import { loadMetaPixel } from '../../utils/metaPixel';
+import { rtiTemplate } from '../../services/rtiTemplate.js';
+import { createContact } from '../../services/createContact.js';
+import { useRef } from "react";
 
 export default function RTISuccessPage() {
   const [popup, setPopup] = useState('');
+  const [loading, setLoading] = useState(true);
   
  const { paymentData } = useContext(PaymentContext);
+
+const hasRunRef = useRef(false);
+
+const handleWhatsAppFlow = async () => {
+  if (hasRunRef.current) return; // ⛔ stop second run
+  hasRunRef.current = true;
+
+ setLoading(true); // 🔄 start spinner
+
+  try {
+    const contactPayload = {
+      mobile: `+91${paymentData.phoneNumber}`,
+      name: paymentData.name,
+    };
+
+    const contactRes = await createContact(contactPayload);
+    console.log("Contact created:", contactRes);
+
+    if (!contactRes?.success) return;
+
+    const messagePayload = {
+      to: `+91${paymentData.phoneNumber}`,
+      name: paymentData.name,
+      orderId: paymentData.razorpayOrderId,
+      paymentOption: paymentData.paymentOption
+    };
+
+    const msgRes = await rtiTemplate(messagePayload);
+    console.log("RTI template sent:", msgRes);
+
+  } catch (error) {
+    console.error("WhatsApp flow error:", error);
+  }finally{
+    setLoading(false); // ✅ stop spinner (success or error)
+  }
+};
+
+
 
  useEffect(() => {
   // Load Meta Pixel script
@@ -22,6 +64,7 @@ export default function RTISuccessPage() {
     phone: paymentData?.phoneNumber,
     paper: paymentData?.paymentOption,
   });
+  handleWhatsAppFlow()
 }, []);
 
 
@@ -47,6 +90,17 @@ export default function RTISuccessPage() {
       setTimeout(() => setPopup(''), 2000);
     });
   };
+
+   if (loading) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
+        <div className="w-16 h-16 border-4 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+        <p className="mt-4 text-gray-700 font-medium text-lg">
+          Sending WhatsApp confirmation wait…
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 md:p-8">
