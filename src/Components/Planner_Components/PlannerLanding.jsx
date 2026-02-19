@@ -245,25 +245,25 @@ const handleSubmit = useCallback(
 
   const benefits = [
     {
-      icon: "https://focasedu.com/wp-content/themes/edumodo/images/images/Icon-Hand-On.webp",
+      icon: "https://res.cloudinary.com/dyfe1f2qj/image/upload/v1771501465/Icon-Hand-On_wlofs8.webp",
       title: "Daily Time-Blocked Study Sheets",
       description:
         "Know exactly what to study every day — morning, afternoon, and night.",
     },
     {
-      icon: "https://focasedu.com/wp-content/themes/edumodo/images/images/Icon-Learning.webp",
+      icon: "https://res.cloudinary.com/dyfe1f2qj/image/upload/v1771501677/Icon-Learning_ctskxg.webp",
       title: "Subject-Wise Completion Tracker",
       description:
         "Track what’s done, what’s pending, and what needs revision.",
     },
     {
-      icon: "https://focasedu.com/wp-content/themes/edumodo/images/images/Icon-Expert-Guidance.webp",
+      icon: "https://res.cloudinary.com/dyfe1f2qj/image/upload/v1771501926/Icon-Expert-Guidance_waxa7s.webp",
       title: "Lower-End & Higher-End Targets",
       description:
         "Even if the day goes bad, you still move forward. No zero-productivity days.",
     },
     {
-      icon: "https://focasedu.com/wp-content/themes/edumodo/images/images/Icon-Creative.webp",
+      icon: "https://res.cloudinary.com/dyfe1f2qj/image/upload/v1771501992/Icon-Creative_mq8bkw.webp",
       title: "Self-Rating System",
       description:
         "Evaluate your performance daily and improve your weekly consistency.",
@@ -275,7 +275,7 @@ const handleSubmit = useCallback(
       {/* Header Logo */}
       <div className="flex justify-center pt-6 pb-4 px-4">
         <img
-          src="https://focasedu.com/wp-content/uploads/2024/02/Focus-logo-tagline-01-1-1.png"
+          src="https://res.cloudinary.com/dyfe1f2qj/image/upload/v1771503338/Focus-logo-tagline-01-1-1_x4sxm1.png"
           alt="Logo"
           className="h-16 md:h-20 max-w-full"
         />
@@ -292,7 +292,7 @@ const handleSubmit = useCallback(
                 Limited to 100 Pieces
               </h3>
               <img
-                src="https://focasedu.com/wp-content/themes/edumodo/images/images/fire.webp"
+                src="https://res.cloudinary.com/dyfe1f2qj/image/upload/v1771503503/fire_qrzukh.webp"
                 alt="Fire"
                 className="h-3 md:h-4"
               />
@@ -318,21 +318,21 @@ const handleSubmit = useCallback(
                 <div className="flex gap-2">
                   <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border-2 border-gray-300 flex-shrink-0">
                     <img
-                      src="https://focasedu.com/wp-content/themes/edumodo/images/images/Mari%20Muthu.jpg"
+                      src="https://res.cloudinary.com/dyfe1f2qj/image/upload/v1771503607/MariMuthu_zluzkh.jpg"
                       alt="Student"
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border-2 border-gray-300 flex-shrink-0">
                     <img
-                      src="https://focasedu.com/wp-content/themes/edumodo/images/images/Mohanapriyadharsini.jpg"
+                      src="https://res.cloudinary.com/dyfe1f2qj/image/upload/v1771503660/Mohanapriyadharsini_xrntxt.jpg"
                       alt="Student"
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border-2 border-gray-300 flex-shrink-0">
                     <img
-                      src="https://focasedu.com/wp-content/themes/edumodo/images/images/sri%20devi.jpeg"
+                      src="https://res.cloudinary.com/dyfe1f2qj/image/upload/v1771503751/sridevi_kkeltj.jpg"
                       alt="Student"
                       className="w-full h-full object-cover"
                     />
@@ -340,7 +340,7 @@ const handleSubmit = useCallback(
                 </div>
                 <div>
                   <img
-                    src="https://focasedu.com/wp-content/themes/edumodo/images/images/five-stars.svg"
+                    src="https://res.cloudinary.com/dyfe1f2qj/image/upload/v1771503815/five-stars_kryzuj.svg"
                     alt="Stars"
                     className="h-5 md:h-6 mb-1 md:mb-2"
                   />
@@ -382,7 +382,7 @@ const handleSubmit = useCallback(
             {/* Stats */}
             <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
               <img
-                src="https://focasedu.com/wp-content/themes/edumodo/images/images/Kit-Certificate-Icon.svg"
+                src="https://res.cloudinary.com/dyfe1f2qj/image/upload/v1771503897/Kit-Certificate-Icon_q0vrnh.svg"
                 alt="Certificate"
                 className="h-5 md:h-6"
               />
@@ -392,26 +392,26 @@ const handleSubmit = useCallback(
             </div>
 
             {/* Course Details */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
-              <div className="bg-blue-50 p-3 md:p-4 rounded-lg text-center">
-                <h4 className="text-gray-400 text-xs md:text-sm">Applicable for </h4>
-                <p className="font-semibold text-gray-800 text-sm md:text-base">
-                 Jan, May, Sep - 2026
+            <div className="grid grid-cols-3 gap-2 md:gap-4 mb-6 md:mb-8">
+              <div className="bg-blue-50 p-2 md:p-4 rounded-lg text-center">
+                <h4 className="text-gray-400 text-xs md:text-sm">Applicable for</h4>
+                <p className="font-semibold text-gray-800 text-xs md:text-base leading-tight mt-1">
+                  Jan, May, Sep - 2026
                 </p>
               </div>
-              <div className="bg-blue-50 p-3 md:p-4 rounded-lg text-center">
-                <h4 className="text-gray-400 text-xs md:text-sm">
-                  Delivery
-                </h4>
-                <p className="font-semibold text-gray-800 text-sm md:text-base">
-                 PAN India  7-10 days
+              <div className="bg-blue-50 p-2 md:p-4 rounded-lg text-center">
+                <h4 className="text-gray-400 text-xs md:text-sm">Delivery</h4>
+                <p className="font-semibold text-gray-800 text-xs md:text-base leading-tight mt-1">
+                  PAN India 7–10 days
                 </p>
               </div>
-              <div className="bg-blue-50 p-3 md:p-4 rounded-lg text-center">
-                <h4 className="text-gray-400 text-xs md:text-sm">Level</h4>
-                <p className="font-semibold text-gray-800 text-sm md:text-base">
-                  CA Intermediate
-                </p>
+              <div className="bg-blue-50 p-2 md:p-4 rounded-lg text-center">
+                <h4 className="text-gray-400 text-xs md:text-sm mb-1">Level</h4>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap">CA Foundation</span>
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap">CA Intermediate</span>
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap">CA Final</span>
+                </div>
               </div>
             </div>
 
@@ -474,12 +474,10 @@ Whether you're starting fresh or restarting after a low attempt, the FOCAS Plann
 
             {/* Testimonials Carousel */}
             <Feedback />
-                          {/* Video Player */}
+                         
 <section>
 
- {/*   <h1 className="w-full text-center text-3xl sm:text-4xl lg:text-5xl font-semibold mt-4 sm:mt-5">
-       A FOCAS Plannner ASMR Experience
-      </h1> */}
+ 
 <h1 className="text-2xl sm:text-2xl md:text-3xl font-extrabold uppercase tracking-tight text-center pb-2 sm:pb-4">
   A FOCAS Planner ASMR Experience
 </h1>
@@ -522,7 +520,8 @@ Whether you're starting fresh or restarting after a low attempt, the FOCAS Plann
           <div className="hidden lg:block">
             <div className="sticky top-24 bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
               <div className="inline-flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-1 mb-4 text-sm">
-                <span className="w-2 h-2 bg-red-500 rounded-full" />
+               {/*  <span className="w-2 h-2 bg-red-500 rounded-full" /> */}
+                <img src="https://res.cloudinary.com/dyfe1f2qj/image/upload/v1771504154/dot_dzhway.webp" alt="" className="w-6 h-6"/>
                 <span className="text-red-600 font-semibold">Best Seller</span>
               </div>
 

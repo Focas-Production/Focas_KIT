@@ -28,7 +28,7 @@ const TestimonialCard = ({ Userimage }) => {
       <img
         src={Userimage}
         alt=""
-        className="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-xl border border-black"
+        className="h-[480px] sm:h-[600px] lg:h-[580px] w-auto object-contain rounded-xl border border-black"
       />
     </div>
   );
